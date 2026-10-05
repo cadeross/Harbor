@@ -26,19 +26,19 @@ struct PanelView: View {
                     .transition(.blurReplace)
             } else {
                 ScrollView {
-                    GlassEffectContainer(spacing: 10) {
-                        VStack(spacing: 8) {
-                            ReorderableFolderList(spacing: 8, grouping: grouping)
+                    // Rows are deliberately separate glass surfaces (no GlassEffectContainer),
+                    // so a row being dragged over its neighbours doesn't melt into them.
+                    VStack(spacing: 8) {
+                        ReorderableFolderList(spacing: 8, grouping: grouping)
 
-                            if !grouping.others.isEmpty {
-                                OtherServersSection(servers: grouping.others)
-                                    .padding(.top, store.folders.isEmpty ? 0 : 6)
-                                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                            }
+                        if !grouping.others.isEmpty {
+                            OtherServersSection(servers: grouping.others)
+                                .padding(.top, store.folders.isEmpty ? 0 : 6)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 12)
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 12)
                 }
                 .scrollIndicators(.automatic)
                 .scrollBounceBehavior(.basedOnSize)
