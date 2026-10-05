@@ -4,6 +4,7 @@ import SwiftUI
 struct FolderRow: View {
     let folder: PinnedFolder
     let servers: [LocalServer]
+    var isLifted = false
 
     @Environment(PinStore.self) private var store
     @Environment(ServerMonitor.self) private var monitor
@@ -85,7 +86,7 @@ struct FolderRow: View {
             in: .rect(cornerRadius: 16)
         )
         .opacity(folder.exists ? 1 : 0.7)
-        .onTapGesture(perform: copy)
+        .onTapGesture { if !isLifted { copy() } }
         .onHover { hovering in withAnimation(.snappy(duration: 0.18)) { isHovering = hovering } }
         .animation(.smooth(duration: 0.35), value: isRunning)
         .contextMenu { menu }

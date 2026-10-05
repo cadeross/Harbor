@@ -28,13 +28,7 @@ struct PanelView: View {
                 ScrollView {
                     GlassEffectContainer(spacing: 10) {
                         VStack(spacing: 8) {
-                            ForEach(store.folders) { folder in
-                                FolderRow(folder: folder, servers: grouping.byFolder[folder.id] ?? [])
-                                    .transition(.asymmetric(
-                                        insertion: .scale(scale: 0.92).combined(with: .opacity),
-                                        removal: .scale(scale: 0.96).combined(with: .opacity)
-                                    ))
-                            }
+                            ReorderableFolderList(spacing: 8, grouping: grouping)
 
                             if !grouping.others.isEmpty {
                                 OtherServersSection(servers: grouping.others)
@@ -99,17 +93,8 @@ struct PanelView: View {
 private struct HeaderView: View {
     let runningCount: Int
     let onAdd: () -> Void
-    @State private var bob = 0
-
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "sailboat.fill")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.tint)
-                .symbolEffect(.bounce.up, value: bob)
-                .onTapGesture { bob += 1 }
-                .help("Ahoy!")
-
             VStack(alignment: .leading, spacing: 0) {
                 Text("Harbor")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -130,7 +115,6 @@ private struct HeaderView: View {
             .buttonBorderShape(.circle)
             .help("Pin a folder")
         }
-        .onChange(of: runningCount) { bob += 1 }
     }
 
     private var statusLine: String {

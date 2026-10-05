@@ -2,7 +2,14 @@
 
 A tiny Liquid Glass menu bar app for macOS that keeps your project folders close and your localhost servers in check.
 
-- **Pin folders** and copy their full path with a single click
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
+    <img src="docs/screenshot-light.png" alt="The Harbor panel with four pinned folders, two of them running localhost servers" width="456">
+  </picture>
+</p>
+
+- **Pin folders** and copy their full path with a single click. Press and hold a folder to drag it into a new order.
 - **See what's running**: Harbor spots dev servers listening on localhost and matches them to your pinned projects
 - **Stop servers** right from the menu bar, no hunting for the right terminal tab
 - **Open in your tools**: reveal in Finder, or open in your editor (Cursor, Zed, VS Code) or terminal (Ghostty, iTerm, Warp, Terminal)
@@ -33,5 +40,5 @@ Because it inspects and stops other processes, Harbor runs outside the App Sandb
 
 ## Development tips
 
-- `open Harbor.app --args -HarborPreview YES` opens the panel in a regular window, which is handy for screenshots.
+- `open Harbor.app --args -HarborPreview YES` opens the panel in a standalone window over a backdrop, for screenshots. Add `-HarborAppearance light` or `dark` to force a theme. Preview mode never saves pins, so you can pass demo pins as a launch argument (`-pinnedFolders "<hex-encoded JSON>"`) without touching your real ones.
 - `swift scripts/make-icon.swift icon.png` re-renders the app icon.
