@@ -37,7 +37,7 @@ private struct MenuBarLabel: View {
         let sailboat = count > 0 ? "sailboat.fill" : "sailboat"
         HStack(spacing: 3) {
             if watch.isOn {
-                Image(nsImage: .menuBarSailboat(sailboat, onWatch: "binoculars.fill"))
+                Image(nsImage: .menuBarSailboat(sailboat, badge: "sun.max.fill"))
             } else {
                 Image(systemName: sailboat)
             }
@@ -54,18 +54,25 @@ private struct MenuBarLabel: View {
 }
 
 private extension NSImage {
-    /// The menu bar draws only one image per item, so the lookout's binoculars are composed in beside the boat.
-    static func menuBarSailboat(_ sailboat: String, onWatch badge: String) -> NSImage {
-        func symbol(_ name: String, size: CGFloat) -> NSImage {
+    /// The sailboat with a little sun out over the sail, drawn as one glyph the way the system's
+    /// badged symbols are: the menu bar only shows a single image per item.
+    static func menuBarSailboat(_ sailboat: String, badge: String) -> NSImage {
+        func symbol(_ name: String, size: CGFloat, weight: NSFont.Weight) -> NSImage {
             NSImage(systemSymbolName: name, accessibilityDescription: nil)?
-                .withSymbolConfiguration(.init(pointSize: size, weight: .regular)) ?? NSImage()
+                .withSymbolConfiguration(.init(pointSize: size, weight: weight)) ?? NSImage()
         }
-        let boat = symbol(sailboat, size: 13)
-        let badge = symbol(badge, size: 9)
-        let size = NSSize(width: boat.size.width + 2 + badge.size.width, height: boat.size.height)
+        let boat = symbol(sailboat, size: 13, weight: .regular)
+        let badge = symbol(badge, size: 7.5, weight: .bold)
+        let size = NSSize(width: boat.size.width + 3, height: boat.size.height + 1)
         let image = NSImage(size: size, flipped: false) { _ in
             boat.draw(at: .zero, from: .zero, operation: .sourceOver, fraction: 1)
-            badge.draw(at: NSPoint(x: boat.size.width + 2, y: 1), from: .zero, operation: .sourceOver, fraction: 1)
+            let origin = NSPoint(x: size.width - badge.size.width, y: size.height - badge.size.height)
+            // Clear a halo out of the sail so the badge reads as its own shape.
+            let halo = NSRect(origin: origin, size: badge.size).insetBy(dx: -0.5, dy: -0.5)
+            NSGraphicsContext.current?.compositingOperation = .destinationOut
+            NSBezierPath(ovalIn: halo).fill()
+            NSGraphicsContext.current?.compositingOperation = .sourceOver
+            badge.draw(at: origin, from: .zero, operation: .sourceOver, fraction: 1)
             return true
         }
         image.isTemplate = true
