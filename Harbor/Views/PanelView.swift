@@ -46,13 +46,17 @@ struct PanelView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
 
+            KeepAwakeRow()
+                .padding(.horizontal, store.folders.isEmpty && grouping.others.isEmpty ? 16 : 12)
+                .padding(.bottom, 10)
+
             FooterView()
         }
         .frame(width: 360)
         .overlay(alignment: .bottom) {
             if let docked = monitor.lastDocked {
                 DockedToast(label: docked)
-                    .padding(.bottom, 52)
+                    .padding(.bottom, 112)
                     .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .scale(scale: 0.9)))
             }
         }

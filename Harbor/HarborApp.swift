@@ -9,10 +9,12 @@ struct HarborApp: App {
             PanelView()
                 .environment(AppModel.store)
                 .environment(AppModel.monitor)
+                .environment(AppModel.watch)
         } label: {
             MenuBarLabel()
                 .environment(AppModel.store)
                 .environment(AppModel.monitor)
+                .environment(AppModel.watch)
         }
         .menuBarExtraStyle(.window)
     }
@@ -21,23 +23,53 @@ struct HarborApp: App {
 enum AppModel {
     static let store = PinStore()
     static let monitor = ServerMonitor()
+    static let watch = NightWatch()
 }
 
 private struct MenuBarLabel: View {
     @Environment(PinStore.self) private var store
     @Environment(ServerMonitor.self) private var monitor
+    @Environment(NightWatch.self) private var watch
 
     var body: some View {
         let grouping = monitor.group(by: store.folders)
         let count = grouping.runningPinnedCount + grouping.others.count
+        let sailboat = count > 0 ? "sailboat.fill" : "sailboat"
         HStack(spacing: 3) {
-            Image(systemName: count > 0 ? "sailboat.fill" : "sailboat")
+            if watch.isOn {
+                Image(nsImage: .menuBarSailboat(sailboat, onWatch: "binoculars.fill"))
+            } else {
+                Image(systemName: sailboat)
+            }
             if count > 0 {
                 Text(verbatim: "\(count)")
                     .monospacedDigit()
             }
         }
-        .accessibilityLabel(count > 0 ? "Harbor, \(count) running" : "Harbor")
+        .accessibilityLabel([
+            count > 0 ? "Harbor, \(count) running" : "Harbor",
+            watch.isOn ? "keeping Mac awake" : nil,
+        ].compactMap(\.self).joined(separator: ", "))
+    }
+}
+
+private extension NSImage {
+    /// The menu bar draws only one image per item, so the lookout's binoculars are composed in beside the boat.
+    static func menuBarSailboat(_ sailboat: String, onWatch badge: String) -> NSImage {
+        func symbol(_ name: String, size: CGFloat) -> NSImage {
+            NSImage(systemSymbolName: name, accessibilityDescription: nil)?
+                .withSymbolConfiguration(.init(pointSize: size, weight: .regular)) ?? NSImage()
+        }
+        let boat = symbol(sailboat, size: 13)
+        let badge = symbol(badge, size: 9)
+        let size = NSSize(width: boat.size.width + 2 + badge.size.width, height: boat.size.height)
+        let image = NSImage(size: size, flipped: false) { _ in
+            boat.draw(at: .zero, from: .zero, operation: .sourceOver, fraction: 1)
+            badge.draw(at: NSPoint(x: boat.size.width + 2, y: 1), from: .zero, operation: .sourceOver, fraction: 1)
+            return true
+        }
+        image.isTemplate = true
+        return image
     }
 }
 
@@ -57,6 +89,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             rootView: PanelView()
                 .environment(AppModel.store)
                 .environment(AppModel.monitor)
+                .environment(AppModel.watch)
                 .glassEffect(.regular, in: .rect(cornerRadius: 24))
                 .padding(48)
                 .background(PreviewBackdrop())
@@ -76,6 +109,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate()
         previewWindow = window
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        AppModel.watch.standDown()
     }
 }
 
